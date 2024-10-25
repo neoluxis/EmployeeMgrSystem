@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thesis Management System</title>
+    <!-- Materialize CSS CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+        .modal {
+            max-width: 500px;
+        }
+        .table-container {
+            margin-top: 20px;
+        }
+    </style>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+
+        // Function to fetch and display theses
+        function loadTheses(query = '') {
+            fetch(`/theses`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('thesisTableBody');
+                    tableBody.innerHTML = ''; // Clear existing rows
+
+                    data.forEach(thesis => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${thesis.id}</td>
+                            <td>${thesis.title}</td>
+                            <td>${thesis.author}</td>
+                            <td>${thesis.supervisor}</td>
+                            <td>${thesis.date}</td>
+                            <td>
+                                <button class="btn-small red darken-1" onclick="deleteThesis(${thesis.id})">
+                                    <i class="material-icons">delete</i>
+                                </button>
+                                <button class="btn-small blue darken-1 modal-trigger" onclick="showEditModal(${thesis.id}, '${thesis.title}', '${thesis.author}', '${thesis.supervisor}', '${thesis.date}')">
+                                    <i class="material-icons">edit</i>
+                                </button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                });
+        }
+
+        // Function to delete a thesis
+        function deleteThesis(id) {
+            fetch(`/delete/${id}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                    loadTheses();
+                });
+        }
+
+        // Listen for update event from server
+        socket.on('update_theses', () => {
+            loadTheses();
+        });
+
+        // Add new thesis
+        function addThesis() {
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const supervisor = document.getElementById('supervisor').value;
+            const date = document.getElementById('date').value;
+
+            fetch('/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, author, supervisor, date })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                loadTheses();
+                M.Modal.getInstance(document.getElementById('addModal')).close();
+                // Clear input fields after adding
+                document.getElementById('title').value = '';
+                document.getElementById('author').value = '';
+                document.getElementById('supervisor').value = '';
+                document.getElementById('date').value = '';
+            });
+        }
+
+        // Show edit modal
+        function showEditModal(id, title, author, supervisor, date) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editTitle').value = title;
+            document.getElementById('editAuthor').value = author;
+            document.getElementById('editSupervisor').value = supervisor;
+            document.getElementById('editDate').value = date;
+            M.Modal.getInstance(document.getElementById('editModal')).open();
+        }
+
+        // Edit thesis
+        function editThesis() {
+            const id = document.getElementById('editId').value;
+            const title = document.getElementById('editTitle').value;
+            const author = document.getElementById('editAuthor').value;
+            const supervisor = document.getElementById('editSupervisor').value;
+            const date = document.getElementById('editDate').value;
+
+            fetch(`/update/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, author, supervisor, date })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                M.Modal.getInstance(document.getElementById('editModal')).close();
+                loadTheses();
+            });
+        }
+
+        window.onload = () => {
+            loadTheses();
+            M.AutoInit(); // Initialize all Materialize components
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h4 class="center-align">Thesis Management System</h4>
+        
+        <div class="row">
+            <div class="col s12">
+                <button class="btn waves-effect waves-light modal-trigger" href="#addModal">
+                    Add Thesis <i class="material-icons right">add</i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col s12">
+                <table class="striped highlight">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>Supervisor</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="thesisTableBody">
+                        <!-- Content will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Modal -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <h5>Add Thesis</h5>
+            <div class="input-field">
+                <input id="title" type="text" placeholder="Title">
+            </div>
+            <div class="input-field">
+                <input id="author" type="text" placeholder="Author">
+            </div>
+            <div class="input-field">
+                <input id="supervisor" type="text" placeholder="Supervisor">
+            </div>
+            <div class="input-field">
+                <input id="date" type="date">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-close btn-flat">Cancel</button>
+            <button class="btn waves-effect waves-light" onclick="addThesis()">Add</button>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h5>Edit Thesis</h5>
+            <input type="hidden" id="editId">
+            <div class="input-field">
+                <input id="editTitle" type="text" placeholder="Title">
+            </div>
+            <div class="input-field">
+                <input id="editAuthor" type="text" placeholder="Author">
+            </div>
+            <div class="input-field">
+                <input id="editSupervisor" type="text" placeholder="Supervisor">
+            </div>
+            <div class="input-field">
+                <input id="editDate" type="date">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-close btn-flat">Cancel</button>
+            <button class="btn waves-effect waves-light" onclick="editThesis()">Save Changes</button>
+        </div>
+    </div>
+
+    <!-- Materialize JS and dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>
+

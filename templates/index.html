@@ -23,33 +23,22 @@
         button {
             margin: 5px;
         }
-        #editModal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px;
-            border: 1px solid #ccc;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
     </style>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
         const socket = io();
 
         // Function to fetch and display theses
-        function loadTheses(query = '') {
-            fetch(`/theses`)
-                .then(response => response.json())
-                .then(data => {
-                    const tableBody = document.getElementById('thesisTableBody');
-                    tableBody.innerHTML = ''; // Clear existing rows
+        function loadTheses() {
+            fetch('/theses')
+                    .then(response => response.json())
+                    .then(data => {
+                        const tableBody = document.getElementById('thesisTableBody');
+                        tableBody.innerHTML = ''; // Clear existing rows
 
-                    data.forEach(thesis => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
+                        data.forEach(thesis => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
                             <td>${thesis.id}</td>
                             <td>${thesis.title}</td>
                             <td>${thesis.author}</td>
@@ -57,22 +46,21 @@
                             <td>${thesis.date}</td>
                             <td>
                                 <button onclick="deleteThesis(${thesis.id})">Delete</button>
-                                <button onclick="showEditModal(${thesis.id}, '${thesis.title}', '${thesis.author}', '${thesis.supervisor}', '${thesis.date}')">Edit</button>
                             </td>
                         `;
-                        tableBody.appendChild(row);
+                            tableBody.appendChild(row);
+                        });
                     });
-                });
         }
 
         // Function to delete a thesis
         function deleteThesis(id) {
             fetch(`/delete/${id}`, { method: 'DELETE' })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data.message);
-                    loadTheses();
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data.message);
+                        loadTheses();
+                    });
         }
 
         // Listen for update event from server
@@ -92,103 +80,40 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title, author, supervisor, date })
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.message);
-                loadTheses();
-                // Clear input fields after adding
-                document.getElementById('title').value = '';
-                document.getElementById('author').value = '';
-                document.getElementById('supervisor').value = '';
-                document.getElementById('date').value = '';
-            });
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data.message);
+                        loadTheses();
+                    });
         }
 
-        // Show edit modal
-        function showEditModal(id, title, author, supervisor, date) {
-            document.getElementById('editId').value = id;
-            document.getElementById('editTitle').value = title;
-            document.getElementById('editAuthor').value = author;
-            document.getElementById('editSupervisor').value = supervisor;
-            document.getElementById('editDate').value = date;
-            document.getElementById('editModal').style.display = 'block';
-        }
-
-        // Hide edit modal
-        function hideEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
-
-        // Edit thesis
-        function editThesis() {
-            const id = document.getElementById('editId').value;
-            const title = document.getElementById('editTitle').value;
-            const author = document.getElementById('editAuthor').value;
-            const supervisor = document.getElementById('editSupervisor').value;
-            const date = document.getElementById('editDate').value;
-
-            fetch(`/update/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, author, supervisor, date })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.message);
-                hideEditModal();
-                loadTheses();
-            });
-        }
-
-        // Search thesis
-        function searchThesis() {
-            const query = document.getElementById('search').value;
-            loadTheses(query);
-        }
-
-        window.onload = () => {
-            loadTheses();
-        };
+        window.onload = loadTheses;
     </script>
 </head>
 <body>
-    <h2 style="text-align: center;">Thesis Management System</h2>
-    <div style="text-align: center;">
-        <input type="text" id="title" placeholder="Title">
-        <input type="text" id="author" placeholder="Author">
-        <input type="text" id="supervisor" placeholder="Supervisor">
-        <input type="date" id="date">
-        <button onclick="addThesis()">Add Thesis</button>
-    </div>
-    <div style="text-align: center;">
-        <input type="text" id="search" placeholder="Search..." onkeyup="searchThesis()">
-    </div>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Supervisor</th>
-                <th>Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="thesisTableBody">
-            <!-- Content will be inserted here by JavaScript -->
-        </tbody>
-    </table>
-
-    <!-- Edit Modal -->
-    <div id="editModal">
-        <input type="hidden" id="editId">
-        <input type="text" id="editTitle" placeholder="Title">
-        <input type="text" id="editAuthor" placeholder="Author">
-        <input type="text" id="editSupervisor" placeholder="Supervisor">
-        <input type="date" id="editDate">
-        <button onclick="editThesis()">Save Changes</button>
-        <button onclick="hideEditModal()">Cancel</button>
-    </div>
+<h2 style="text-align: center;">Thesis Management System</h2>
+<div style="text-align: center;">
+    <input type="text" id="title" placeholder="Title">
+    <input type="text" id="author" placeholder="Author">
+    <input type="text" id="supervisor" placeholder="Supervisor">
+    <input type="date" id="date">
+    <button onclick="addThesis()">Add Thesis</button>
+</div>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Supervisor</th>
+        <th>Date</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody id="thesisTableBody">
+    <!-- Content will be inserted here by JavaScript -->
+    </tbody>
+</table>
 </body>
 </html>
 

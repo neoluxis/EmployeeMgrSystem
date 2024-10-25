@@ -5,10 +5,9 @@ import sqlite3
 app = Flask(__name__)
 socketio = SocketIO(app)
 
-# SQLite 数据库文件
+# SQLite
 DATABASE = 'thesis.db'
 
-# 数据库操作函数
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
@@ -103,4 +102,7 @@ def index():
 
 if __name__ == '__main__':
     init_db()  # Initialize the database
-    socketio.run(app, host='0.0.0.0', port=5000)
+    socketio.run(app,
+                 host='0.0.0.0',
+                 port=5000,
+                 allow_unsafe_werkzeug=True)
