@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thesis Management System</title>
+    <style>
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            margin: 5px;
+        }
+    </style>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+
+        // Function to fetch and display theses
+        function loadTheses() {
+            fetch('/theses')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('thesisTableBody');
+                    tableBody.innerHTML = ''; // Clear existing rows
+
+                    data.forEach(thesis => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${thesis.id}</td>
+                            <td>${thesis.title}</td>
+                            <td>${thesis.author}</td>
+                            <td>${thesis.supervisor}</td>
+                            <td>${thesis.date}</td>
+                            <td>
+                                <button onclick="deleteThesis(${thesis.id})">Delete</button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                });
+        }
+
+        // Function to delete a thesis
+        function deleteThesis(id) {
+            fetch(`/delete/${id}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                    loadTheses();
+                });
+        }
+
+        // Listen for update event from server
+        socket.on('update_theses', () => {
+            loadTheses();
+        });
+
+        // Add new thesis
+        function addThesis() {
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const supervisor = document.getElementById('supervisor').value;
+            const date = document.getElementById('date').value;
+
+            fetch('/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, author, supervisor, date })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                loadTheses();
+            });
+        }
+
+        window.onload = loadTheses;
+    </script>
+</head>
+<body>
+    <h2 style="text-align: center;">Thesis Management System</h2>
+    <div style="text-align: center;">
+        <input type="text" id="title" placeholder="Title">
+        <input type="text" id="author" placeholder="Author">
+        <input type="text" id="supervisor" placeholder="Supervisor">
+        <input type="date" id="date">
+        <button onclick="addThesis()">Add Thesis</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Supervisor</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="thesisTableBody">
+            <!-- Content will be inserted here by JavaScript -->
+        </tbody>
+    </table>
+</body>
+</html>
+
