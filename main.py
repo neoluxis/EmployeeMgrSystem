@@ -14,6 +14,21 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+# 创建数据库和表
+def init_db():
+    conn = get_db_connection()
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS thesis (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            author TEXT NOT NULL,
+            supervisor TEXT NOT NULL,
+            date TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
 # 添加论文
 @app.route('/add', methods=['POST'])
 def add_thesis():
@@ -26,7 +41,6 @@ def add_thesis():
     conn.commit()
     conn.close()
     
-    # 通知所有连接的客户端更新表格
     socketio.emit('update_theses')
     return jsonify({"message": "Thesis added successfully!"}), 201
 
@@ -42,7 +56,6 @@ def update_thesis(thesis_id):
     conn.commit()
     conn.close()
     
-    # 通知所有连接的客户端更新表格
     socketio.emit('update_theses')
     return jsonify({"message": "Thesis updated successfully!"})
 
@@ -54,7 +67,6 @@ def delete_thesis(thesis_id):
     conn.commit()
     conn.close()
     
-    # 通知所有连接的客户端更新表格
     socketio.emit('update_theses')
     return jsonify({"message": "Thesis deleted successfully!"})
 
@@ -63,6 +75,18 @@ def delete_thesis(thesis_id):
 def get_theses():
     conn = get_db_connection()
     theses = conn.execute("SELECT * FROM thesis").fetchall()
+    conn.close()
+    
+    theses_list = [dict(thesis) for thesis in theses]
+    return jsonify(theses_list)
+
+# 搜索论文
+@app.route('/search', methods=['GET'])
+def search_thesis():
+    query = request.args.get('query', '')
+    conn = get_db_connection()
+    theses = conn.execute("SELECT * FROM thesis WHERE title LIKE ? OR author LIKE ? OR supervisor LIKE ?", 
+                          ('%' + query + '%', '%' + query + '%', '%' + query + '%')).fetchall()
     conn.close()
     
     theses_list = [dict(thesis) for thesis in theses]
@@ -78,5 +102,5 @@ def index():
     return render_template('index.html', theses=theses)
 
 if __name__ == '__main__':
+    init_db()  # Initialize the database
     socketio.run(app, host='0.0.0.0', port=5000)
-
