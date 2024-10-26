@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thesis Management System</title>
+    <title>论文管理系统</title>
     <!-- Materialize CSS CDN -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
     <!-- Material Icons -->
@@ -23,6 +23,18 @@
         .table-container {
             margin-top: 20px;
         }
+        table.striped th, table.striped td {
+            border: 1px solid #ddd; /* 添加单元格边框 */
+            padding: 8px; /* 添加一些填充空间 */
+            text-align: center; /* 居中 */
+        }
+        table.striped th {
+            background-color: #f2f2f2; /* 表头背景颜色 */
+        }
+        table.striped {
+            border-collapse: collapse; /* 避免重复边框 */
+            width: 100%; /* 占满容器宽度 */
+        }
     </style>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
@@ -36,7 +48,15 @@
                         const tableBody = document.getElementById('thesisTableBody');
                         tableBody.innerHTML = ''; // Clear existing rows
 
-                        data.forEach(thesis => {
+                        // Filter based on search query
+                        const filteredData = data.filter(thesis =>
+                                thesis.title.toLowerCase().includes(query.toLowerCase()) ||
+                                thesis.author.toLowerCase().includes(query.toLowerCase()) ||
+                                thesis.supervisor.toLowerCase().includes(query.toLowerCase()) ||
+                                thesis.date.includes(query)
+                        );
+
+                        filteredData.forEach(thesis => {
                             const row = document.createElement('tr');
                             row.innerHTML = `
                             <td>${thesis.id}</td>
@@ -136,20 +156,32 @@
                     });
         }
 
+        // Search function
+        function searchTheses() {
+            const query = document.getElementById('search').value;
+            loadTheses(query);
+        }
+
         window.onload = () => {
             loadTheses();
             M.AutoInit(); // Initialize all Materialize components
+
+            // Attach search input event
+            document.getElementById('search').addEventListener('input', searchTheses);
         };
     </script>
 </head>
 <body>
 <div class="container">
-    <h4 class="center-align">Thesis Management System</h4>
+    <h4 class="center-align">论文管理系统</h4>
 
     <div class="row">
-        <div class="col s12">
+        <div class="col s6">
+            <input id="search" type="text" placeholder="搜索">
+        </div>
+        <div class="col s6 right-align">
             <button class="btn waves-effect waves-light modal-trigger" href="#addModal">
-                Add Thesis <i class="material-icons right">add</i>
+                添加论文 <i class="material-icons right">add</i>
             </button>
         </div>
     </div>
@@ -159,12 +191,12 @@
             <table class="striped highlight">
                 <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Title</th>
-                    <th>Author</th>
-                    <th>Supervisor</th>
-                    <th>Date</th>
-                    <th>Actions</th>
+                    <th>编号</th>
+                    <th>题目</th>
+                    <th>作者</th>
+                    <th>导师</th>
+                    <th>日期</th>
+                    <th>操作</th>
                 </tr>
                 </thead>
                 <tbody id="thesisTableBody">
@@ -178,7 +210,7 @@
 <!-- Add Modal -->
 <div id="addModal" class="modal">
     <div class="modal-content">
-        <h5>Add Thesis</h5>
+        <h5>添加论文</h5>
         <div class="input-field">
             <input id="title" type="text" placeholder="Title">
         </div>
@@ -193,15 +225,15 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button class="modal-close btn-flat">Cancel</button>
-        <button class="btn waves-effect waves-light" onclick="addThesis()">Add</button>
+        <button class="modal-close btn-flat">取消</button>
+        <button class="btn waves-effect waves-light" onclick="addThesis()">添加</button>
     </div>
 </div>
 
 <!-- Edit Modal -->
 <div id="editModal" class="modal">
     <div class="modal-content">
-        <h5>Edit Thesis</h5>
+        <h5>编辑信息</h5>
         <input type="hidden" id="editId">
         <div class="input-field">
             <input id="editTitle" type="text" placeholder="Title">
@@ -217,16 +249,16 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button class="modal-close btn-flat">Cancel</button>
-        <button class="btn waves-effect waves-light" onclick="editThesis()">Save Changes</button>
+        <button class="modal-close btn-flat">取消</button>
+        <button class="btn waves-effect waves-light" onclick="editThesis()">保存</button>
     </div>
 </div>
 
 <!-- Delete Confirmation Modal -->
 <div id="deleteModal" class="modal">
     <div class="modal-content">
-        <h5>Confirm Delete</h5>
-        <p>Are you sure you want to delete this thesis?</p>
+        <h5>删除</h5>
+        <p>确定删除？</p>
         <input type="hidden" id="confirmDeleteId">
     </div>
     <div class="modal-footer">
