@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}员工列表{% endblock %}
+
+{% block content %}
+<h3>员工列表</h3>
+
+<div class="row" style="display: flex; align-items: center;">
+    {% if is_admin == 'True' or is_admin == '1' %}
+    <div class="col s2">
+        <a href="{{ url_for('add_employee') }}" class="btn waves-effect waves-light" style="width: 100%;">添加员工</a>
+    </div>
+    {% endif %}
+
+    <!-- 搜索栏和按钮 -->
+    <form action="{{ url_for('list_employees') }}" method="get" class="col s10" style="display: flex; align-items: center;">
+        <div class="input-field" style="flex: 1; margin: 0;">
+            <input id="search" name="search" type="text" value="{{ request.args.get('search', '') }}">
+            <label for="search" style="top: -20px;">搜索员工</label>
+        </div>
+        <button type="submit" class="btn waves-effect waves-light" style="margin-left: 10px;">搜索</button>
+        <a href="{{ url_for('list_employees') }}" class="btn waves-effect waves-light grey" style="margin-left: 10px;">清除</a>
+    </form>
+</div>
+
+<table class="striped">
+    <thead>
+    <tr>
+        <th>姓名</th>
+        <th>电子邮件</th>
+        <th>用户名</th>
+        <th>入职时间</th>
+        <th>职位</th>
+        <th>薪资</th>
+        <th>部门</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for employee in employees %}
+    <tr>
+        <td>{{ employee.name }}</td>
+        <td>{{ employee.email }}</td>
+        <td>{{ employee.sys_username }}</td>
+        <td>{{ employee.recruited_at }}</td>
+        <td>{{ employee.position }}</td>
+        <td>{{ employee.salary }}</td>
+        <td>{{ employee.department }}</td>
+        <td>
+            {% if is_admin == 'True' or is_admin == '1' %}
+            <form action="{{ url_for('delete_employee', id=employee.id) }}" method="post" style="display:inline;">
+                <button type="submit" class="btn-small red waves-effect waves-light">删除</button>
+            </form>
+            <form action="{{ url_for('edit_employee', id=employee.id) }}" method="get" style="display:inline;">
+                <button type="submit" class="btn-small waves-effect waves-light">编辑</button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

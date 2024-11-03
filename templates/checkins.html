@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}考勤记录{% endblock %}
+
+{% block content %}
+<h3>考勤记录</h3>
+{% if is_admin == 'True' or is_admin == '1' %}
+<a href="#add-checkin-modal" class="btn waves-effect waves-light modal-trigger">添加考勤记录</a>
+{% endif %}
+<a href="#checkin-modal" class="btn waves-effect waves-light modal-trigger">打卡</a>
+<table class="striped">
+    <thead>
+    <tr>
+        <th>员工</th>
+        <th>考勤日期</th>
+        <th>考勤时间</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for checkin in checkins %}
+    <tr>
+        <td>{{ checkin.employee_id}}</td>
+        <td>{{ checkin.checkin_date }}</td>
+        <td>{{ checkin.checkin_time }}</td>
+        <td>
+            {%if is_admin=='True' or is_admin=='1'%}
+            <form action="{{ url_for('delete_checkin', id=checkin.id) }}" method="post" style="display:inline;">
+                <button type="submit" class="btn-small red waves-effect waves-light">删除</button>
+            </form>
+            {%endif%}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% if is_admin == 'True' or is_admin == '1' %}
+<!-- 添加考勤记录模态框 -->
+<div id="add-checkin-modal" class="modal">
+    <div class="modal-content">
+        <h4>添加考勤记录</h4>
+        <form action="{{ url_for('add_checkin') }}" method="post">
+            <div class="input-field">
+                <select id="employee_id" name="employee_id" required>
+                    <option value="" disabled selected>选择员工</option>
+                    {% for employee in employees %}
+                    <option value="{{ employee.name }}">{{ employee.name }}</option>
+                    {% endfor %}
+                </select>
+                <label for="employee_id">员工</label>
+            </div>
+            <div class="input-field">
+                <input id="checkin_date" name="checkin_date" type="date" required>
+                <label for="checkin_date">考勤日期</label>
+            </div>
+            <div class="input-field">
+                <input id="checkin_time" name="checkin_time" type="time" required>
+                <label for="checkin_time">考勤时间</label>
+            </div>
+            <button type="submit" class="btn waves-effect waves-light">提交</button>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-red btn-flat">关闭</a>
+    </div>
+</div>
+{% endif %}
+
+<!--打卡 modal-->
+<div id="checkin-modal" class="modal">
+    <div class="modal-content">
+        <h4>打卡</h4>
+        <form action="{{ url_for('checkin') }}" method="post">
+            <div class="input-field">
+                <select id="employee_id" name="employee_id" required>
+                    <option value="{{ me.name }}" selected>{{ me.name }}</option>
+                </select>
+                <label for="employee_id">员工</label>
+            </div>
+            <button type="submit" class="btn waves-effect waves-light">打卡</button>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-red btn-flat">关闭</a>
+    </div>
+</div>
+
+<script>
+    // 初始化模态框
+    document.addEventListener('DOMContentLoaded', function () {
+        var elems = document.querySelectorAll('.modal');
+        var instances = M.Modal.init(elems);
+    });
+    // 初始化下拉菜单
+    document.addEventListener('DOMContentLoaded', function () {
+        var elems = document.querySelectorAll('select');
+        var instances = M.FormSelect.init(elems);
+    });
+</script>
+{% endblock %}

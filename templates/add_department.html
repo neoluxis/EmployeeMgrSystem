@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}添加部门{% endblock %}
+
+{% block content %}
+<h3>添加新部门</h3>
+<form action="{{ url_for('add_department') }}" method="post">
+    <div class="row">
+        <div class="input-field col s6">
+            <input id="name" name="name" type="text" required>
+            <label for="name">部门名称</label>
+        </div>
+    </div>
+    <button type="submit" class="btn waves-effect waves-light">提交</button>
+</form>
+{% endblock %}

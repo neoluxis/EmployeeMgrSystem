@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}部门列表{% endblock %}
+
+{% block content %}
+<h3>部门列表</h3>
+{% if is_admin=='True' or is_admin=='1'  %}
+<!--?<a href="{{ url_for('add_department') }}" class="btn waves-effect waves-light">添加部门</a>-->
+<a href="#add-department-modal" class="btn waves-effect waves-light modal-trigger">添加部门</a>
+{% endif %}
+<table class="striped">
+    <thead>
+    <tr>
+        <th>名称</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for department in departments %}
+    <tr>
+        <td><a href="{{url_for('depart_member', depid=department.id) }}">{{ department.name }}</a></td>
+        <td>
+            {% if is_admin=='True' or is_admin=='1' %}
+            <form action="{{ url_for('delete_department', id=department.id) }}" method="post" style="display:inline;">
+                <button type="submit" class="btn-small red waves-effect waves-light">删除</button>
+            </form>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% if is_admin=='True' or is_admin=='1' %}
+<!-- 添加部门模态框 -->
+<div id="add-department-modal" class="modal">
+    <div class="modal-content">
+        <h4>添加部门</h4>
+        <form action="{{ url_for('add_department') }}" method="post">
+            <div class="input-field">
+                <input id="name" name="name" type="text" required>
+                <label for="name">名称</label>
+            </div>
+            <button type="submit" class="btn waves-effect waves-light">提交</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Delete modal-->
+<div id="delete-department-modal" class="modal">
+    <div class="modal-content">
+        <h4>删除部门</h4>
+        <p>确定要删除该部门吗？</p>
+    </div>
+    <div class="modal-footer">
+        <form action="" method="post" id="delete-department-form">
+            <button type="submit" class="btn waves-effect waves-light red">确定</button>
+            <a href="#!" class="modal-close waves-effect waves-green btn-flat">取消</a>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var elems = document.querySelectorAll('.modal');
+        var instances = M.Modal.init(elems);
+    });
+</script>
+{% endblock %}

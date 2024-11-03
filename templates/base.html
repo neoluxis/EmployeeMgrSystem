@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}员工管理系统{% endblock %}</title>
+    <!-- Materialize CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- 导航栏 -->
+<nav>
+    <div class="nav-wrapper">
+        <a href="/" class="brand-logo">{{ company_name }}员工管理系统</a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+            {% if session.get('user_id') %}
+            <li><a href="{{ url_for('list_employees') }}">员工管理</a></li>
+            <li><a href="{{ url_for('list_departments') }}">部门管理</a></li>
+            <li><a href="{{ url_for('list_checkins') }}">考勤管理</a></li>
+            <li><a href="{{ url_for('list_applyoffs') }}">请假管理</a></li>
+            <li><a href="#!">{{ session['username'] }}</a></li>
+            <li><a href="{{ url_for('logout') }}">注销</a></li>
+            {% else %}
+            <li><a href="{{ url_for('login') }}">登录</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<!-- 主内容 -->
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+<!-- Materialize JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+</body>
+</html>

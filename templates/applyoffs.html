@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}请假申请{% endblock %}
+
+{% block content %}
+<h3>请假申请</h3>
+{% if is_admin == 'True' or is_admin=='1' %}
+<a href="#add-applyoff-modal" class="btn waves-effect waves-light modal-trigger">添加请假申请</a>
+{%endif%}
+<a href="#applyoff-modal" class="btn waves-effect waves-light modal-trigger">请假</a>
+<table class="striped">
+    <thead>
+    <tr>
+        <th>员工</th>
+        <th>请假开始日期</th>
+        <th>请假结束日期</th>
+        <th>请假理由</th>
+        <th>状态</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for applyoff in applyoffs %}
+    <tr>
+        <td>{{ applyoff.employee_id }}</td>
+        <td>{{ applyoff.applyoff_date_start }}</td>
+        <td>{{ applyoff.applyoff_date_end }}</td>
+        <td>{{ applyoff.applyoff_reason }}</td>
+        <td>{{ applyoff.ended }}</td>
+        <td>
+            <form action="{{ url_for('end_applyoff', id=applyoff.id) }}" method="post" style="display:inline;">
+                <button type="submit" class="btn-small green waves-effect waves-light">销假</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% if is_admin == 'True' or is_admin=='1' %}
+<!-- 添加请假申请模态框 -->
+<div id="add-applyoff-modal" class="modal">
+    <div class="modal-content">
+        <h4>添加请假申请</h4>
+        <form action="{{ url_for('add_applyoff') }}" method="post">
+            <div class="input-field">
+                <select id="employee_id" name="employee_id" required>
+                    <option value="" disabled selected>选择员工</option>
+                    {% for employee in employees %}
+                    <option value="{{ employee.name }}">{{ employee.name }}</option>
+                    {% endfor %}
+                </select>
+                <label for="employee_id">员工</label>
+            </div>
+            <div class="input-field">
+                <input id="applyoff_date_start" name="applyoff_date_start" type="date" required>
+                <label for="applyoff_date_start">请假开始日期</label>
+            </div>
+            <div class="input-field">
+                <input id="applyoff_date_end" name="applyoff_date_end" type="date" required>
+                <label for="applyoff_date_end">请假结束日期</label>
+            </div>
+            <div class="input-field">
+                <textarea id="applyoff_reason" name="applyoff_reason" class="materialize-textarea" required></textarea>
+                <label for="applyoff_reason">请假理由</label>
+            </div>
+            <button type="submit" class="btn waves-effect waves-light">提交</button>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-red btn-flat">关闭</a>
+    </div>
+</div>
+{% endif %}
+
+<!-- 请假 modal -->
+<div id="applyoff-modal" class="modal">
+    <div class="modal-content">
+        <h4>请假</h4>
+        <form action="{{ url_for('add_applyoff') }}" method="post">
+            <div class="input-field">
+                <select id="employee_id" name="employee_id" required>
+                    <option value="" disabled selected>选择员工</option>
+                    <option value="{{ me.name }}" selected>{{ me.name }}</option>
+                </select>
+                <label for="employee_id">员工</label>
+            </div>
+            <div class="input-field">
+                <input id="applyoff_date_start" name="applyoff_date_start" type="date" required>
+                <label for="applyoff_date_start">请假开始日期</label>
+            </div>
+            <div class="input-field">
+                <input id="applyoff_date_end" name="applyoff_date_end" type="date" required>
+                <label for="applyoff_date_end">请假结束日期</label>
+            </div>
+            <div class="input-field">
+                <textarea id="applyoff_reason" name="applyoff_reason" class="materialize-textarea" required></textarea>
+                <label for="applyoff_reason">请假理由</label>
+            </div>
+            <button type="submit" class="btn waves-effect waves-light">提交</button>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-red btn-flat">关闭</a>
+    </div>
+</div>
+
+<script>
+    // 初始化模态框
+    document.addEventListener('DOMContentLoaded', function () {
+        var elems = document.querySelectorAll('.modal');
+        var instances = M.Modal.init(elems);
+    });
+    // 初始化下拉菜单
+    document.addEventListener('DOMContentLoaded', function () {
+        var elems = document.querySelectorAll('select');
+        var instances = M.FormSelect.init(elems);
+    });
+</script>
+{% endblock %}
